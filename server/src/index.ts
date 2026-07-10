@@ -2,8 +2,10 @@ import dotenv from "dotenv";
 dotenv.config();
 import { connectDB } from "./db/connection.js";
 import express from "express";
+import notesRouter from "./routes/api-notes.js";
 const app = express();
-
+app.use(express.json());
+app.use("/api/notes", notesRouter);
 (async () => {
   try {
     await connectDB();

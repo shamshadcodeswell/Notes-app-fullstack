@@ -1,5 +1,19 @@
-import express from "express";
-const router = express.Router();
+import {
+  displayNotes,
+  createNote,
+  editNote,
+  findAndDisplayNote,
+  deleteNote,
+} from "../controllers/notesController.js";
 
-router.route("/api/notes").get().post();
-router.route("/api/notes/:id").get().put().delete();
+import express from "express";
+const notesRouter = express.Router();
+
+notesRouter.route("").get(displayNotes).post(createNote);
+notesRouter
+  .route("/:id")
+  .get(findAndDisplayNote)
+  .put(editNote)
+  .delete(deleteNote);
+
+export default notesRouter;
