@@ -1,5 +1,5 @@
 import { IoHomeOutline } from "react-icons/io5"
-import applogo from "../assets/applogo.png"
+import applogo from "../assets/darkAppLogo.png"
 import "./Header.css"
 const Header = ()=>{
 const date = new Date ()
