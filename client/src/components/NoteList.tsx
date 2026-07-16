@@ -1,6 +1,7 @@
 import type { ApiResponse, Note } from "../type";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./NoteList.css";
 
 const NoteList = () => {
   const [list, setList] = useState<Note[]>([]);
@@ -9,8 +10,9 @@ const NoteList = () => {
 
   useEffect(() => {
     async function fetchNotes() {
-      const data = await fetch(`${import.meta.env.VITE_API_URL}/notes`);
+      const data = await fetch(`${import.meta.env.VITE_API_URL}`);
       const json = await data.json();
+      console.log(json);
       if (json.data) {
         setList(json.data);
         setIsEmpty(false);
@@ -37,7 +39,11 @@ const NoteList = () => {
         <h1 className="emptyMessage">Your notes are empty</h1>
       ) : (
         list.map((note) => (
-          <div key={note._id} className="note">
+          <div
+            key={note._id}
+            className="note"
+            onClick={() => navigate(`/note/${note._id}`)}
+          >
             <h2 className="noteTitle">{note.title}</h2>
             <h3 className="createdAt">
               Created : {new Date(note.createdAt).toLocaleDateString("en-IN")}

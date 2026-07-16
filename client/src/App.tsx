@@ -1,34 +1,38 @@
- 
- import {createBrowserRouter, RouterProvider, Outlet} from "react-router-dom";
- import Header from "./components/Header";
- import "./App.css";
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import Header from "./components/Header";
+import "./App.css";
 import NoteList from "./components/NoteList";
 import CreateNote from "./components/CreateNote";
- const App = () => {
+import NotePage from "./components/NotePage";
+const App = () => {
   return (
     <div className="App">
       <Header></Header>
       <Outlet></Outlet>
     </div>
-  )
-}
-const router = createBrowserRouter([ 
+  );
+};
+const router = createBrowserRouter([
   {
-    path:"/",
-    element : <App></App>,
-    children:[
+    path: "/",
+    element: <App></App>,
+    children: [
       {
-       path:"/",
-       element:<NoteList></NoteList> 
+        index: true,
+        element: <NoteList></NoteList>,
       },
       {
-        path:"/create",
-        element:<CreateNote></CreateNote>
-      }
-    ]
-  }
-])
- const Root = ()=>{
-  return(<RouterProvider router={router}></RouterProvider>)
-} 
-export default Root
+        path: "/create",
+        element: <CreateNote></CreateNote>,
+      },
+      {
+        path: "/note/:id",
+        element: <NotePage></NotePage>,
+      },
+    ],
+  },
+]);
+const Root = () => {
+  return <RouterProvider router={router}></RouterProvider>;
+};
+export default Root;

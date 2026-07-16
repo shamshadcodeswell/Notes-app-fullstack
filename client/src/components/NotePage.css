@@ -1,0 +1,97 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+.NotePage {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.editButton,
+.deleteButton {
+  padding: 9px 22px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.1s;
+}
+
+.editButton {
+  color: #0f0f1a;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.editButton:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.deleteButton {
+  color: #fff;
+  background: rgba(220, 60, 60, 0.7);
+}
+
+.deleteButton:hover {
+  background: rgba(220, 60, 60, 0.9);
+}
+
+.editButton:active,
+.deleteButton:active {
+  transform: scale(0.97);
+}
+
+.dates {
+  text-align: right;
+}
+
+.createdAt,
+.updatedAt {
+  font-family: "Inter", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 2px 0;
+}
+
+.Note {
+  padding: 28px 32px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.Title {
+  font-family: "Inter", sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0 0 16px 0;
+}
+
+.body {
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.7;
+  margin: 0;
+  white-space: pre-wrap;
+}
