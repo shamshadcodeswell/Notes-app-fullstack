@@ -4,6 +4,7 @@ import "./App.css";
 import NoteList from "./components/NoteList";
 import CreateNote from "./components/CreateNote";
 import NotePage from "./components/NotePage";
+import EditNote from "./components/EditNote";
 const App = () => {
   return (
     <div className="App">
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
       {
         path: "/note/:id",
         element: <NotePage></NotePage>,
+      },
+      {
+        path: "note/edit/:id",
+        element: <EditNote></EditNote>,
       },
     ],
   },

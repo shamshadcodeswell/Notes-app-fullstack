@@ -32,7 +32,12 @@ const NotePage = () => {
     <div className="NotePage">
       <div className="topBar">
         <div className="actions">
-          <button className="editButton">Edit</button>
+          <button
+            className="editButton"
+            onClick={() => navigate(`/note/edit/${id}`)}
+          >
+            Edit
+          </button>
           <button className="deleteButton" onClick={deleteNote}>
             delete
           </button>
