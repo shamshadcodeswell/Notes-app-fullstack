@@ -123,10 +123,11 @@ const findAndDisplayNote = async (req: Request, res: Response) => {
         data: null,
       };
       res.status(404).json(response);
+      return;
     }
     const response: ApiResponse<NoteType> = {
       success: true,
-      message: "retieval successful",
+      message: "retrieval successful",
       data: note,
     };
     res.status(200).json(response);
@@ -160,7 +161,7 @@ const deleteNote = async (req: Request, res: Response) => {
         message: "note not found",
         data: null,
       };
-      res.status(404).json(response);
+      return res.status(404).json(response);
     } else {
       const response: ApiResponse<null> = {
         success: true,
