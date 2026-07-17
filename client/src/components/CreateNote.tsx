@@ -10,6 +10,10 @@ const CreateNote = () => {
   const navigate = useNavigate();
 
   const submitNote = async () => {
+    if (title.trim() === "" || body.trim() === "") {
+      setError("Enter appropriate title and body for the note");
+      return;
+    }
     const newNote: NewNote = {
       title: title,
       body: body,
@@ -53,7 +57,7 @@ const CreateNote = () => {
           onChange={(e) => setBody(e.target.value)}
         ></textarea>
       </div>
-      <div className="submitButtonConatiner">
+      <div className="submitButtonContainer">
         <button className="submitButton" onClick={submitNote}>
           Create
         </button>

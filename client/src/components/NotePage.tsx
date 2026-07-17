@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { type Note } from "../type";
 import "./NotePage.css";
-import { useNavigate } from "react-router-dom";
 
 const NotePage = () => {
   const { id } = useParams();
