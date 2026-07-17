@@ -1,93 +1,83 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
 
 .createNotePage {
-  max-width: 560px;
-  margin: 60px auto;
-  padding: 32px;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
 .titleInput input {
   width: 100%;
-  padding: 14px 18px;
-  font-family: 'Inter', sans-serif;
-  font-size: 1.2rem;
+  padding: 16px 0;
+  font-family: "Inter", sans-serif;
+  font-size: 1.8rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.92);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
+  transition: border-color 0.2s;
 }
 
 .titleInput input::placeholder {
-  color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.18);
 }
 
 .titleInput input:focus {
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+  border-bottom-color: rgba(255, 255, 255, 0.25);
 }
 
 .bodyInput textarea {
   width: 100%;
-  min-height: 200px;
-  padding: 14px 18px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
+  min-height: 60vh;
+  padding: 20px 0;
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  background: transparent;
+  border: none;
   outline: none;
-  resize: vertical;
-  line-height: 1.6;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  resize: none;
+  line-height: 1.8;
   box-sizing: border-box;
 }
 
 .bodyInput textarea::placeholder {
-  color: rgba(255, 255, 255, 0.25);
-}
-
-.bodyInput textarea:focus {
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.15);
 }
 
 .submitButtonConatiner {
-  display: flex;
-  justify-content: flex-end;
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
 }
 
 .submitButton {
-  padding: 12px 32px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
+  padding: 14px 36px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.88rem;
   font-weight: 500;
   color: #0f0f1a;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition:
+    background 0.2s,
+    transform 0.1s;
 }
 
 .submitButton:hover {
-  background: rgba(255, 255, 255, 0.95);
+  background: #fff;
 }
 
 .submitButton:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
