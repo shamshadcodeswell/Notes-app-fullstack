@@ -9,6 +9,7 @@ const NoteList = () => {
   const [filteredList, setFilteredList] = useState<Note[]>([]);
   const [search, setSearch] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,6 +28,8 @@ const NoteList = () => {
         } else {
           setError(`Error in retrieving notes ${error}`);
         }
+      } finally {
+        setLoading(false);
       }
     }
     fetchNotes();
@@ -108,12 +111,21 @@ const NoteList = () => {
             </div>
           </div>
         </div>
-        {error && (
+
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="shimmerNote">
+              <div className="shimmerLine shimmerTitle"></div>
+              <div className="shimmerLine shimmerMeta"></div>
+              <div className="shimmerLine shimmerBody"></div>
+              <div className="shimmerLine shimmerBodyShort"></div>
+            </div>
+          ))
+        ) : error ? (
           <div className="errorMessageContainer">
             <p className="errorMessage">Error in retrieving notes:{error}</p>
           </div>
-        )}
-        {filteredList.length === 0 ? (
+        ) : filteredList.length === 0 ? (
           <h1 className="emptyMessage">No notes found</h1>
         ) : (
           filteredList.map((note) => (

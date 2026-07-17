@@ -215,6 +215,9 @@
   line-height: 1.6;
   margin: 14px 0 0 0;
   display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -230,4 +233,55 @@
   color: rgba(255, 255, 255, 0.28);
   padding: 80px 20px;
   letter-spacing: 0.2px;
+}
+
+.shimmerNote {
+  padding: 22px 26px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+
+.shimmerLine {
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.shimmerTitle {
+  height: 16px;
+  width: 45%;
+  margin-bottom: 12px;
+}
+
+.shimmerMeta {
+  height: 10px;
+  width: 30%;
+  margin-bottom: 16px;
+}
+
+.shimmerBody {
+  height: 12px;
+  width: 90%;
+  margin-bottom: 8px;
+}
+
+.shimmerBodyShort {
+  height: 12px;
+  width: 60%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

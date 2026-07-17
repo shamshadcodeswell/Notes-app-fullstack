@@ -90,9 +90,9 @@ const NotePage = () => {
         </div>
       </div>
       <div className="Note">
-        <h1 className="Title">{note?.title}</h1>
+        <h1 className="Title">{note ? note.title : "loading..."}</h1>
 
-        <p className="body">{note?.body}</p>
+        <p className="body">{note ? note.body : "loading"}</p>
       </div>
     </div>
   );
