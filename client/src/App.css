@@ -2,3 +2,18 @@ body {
   margin: 0;
   background: #0f0f1a;
 }
+.errorMessageContainer {
+  padding: 12px 16px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  margin-top: 12px;
+}
+
+.errorMessage {
+  font-family: "Inter", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 400;
+  color: rgba(239, 68, 68, 0.85);
+  margin: 0;
+}

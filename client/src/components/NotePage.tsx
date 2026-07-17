@@ -8,23 +8,44 @@ const NotePage = () => {
   const { id } = useParams();
   const [note, setNote] = useState<Note | null>(null);
   const navigate = useNavigate();
+  const [fetchError, setFetchError] = useState<string>("");
+  const [deleteError, setDeleteError] = useState<string>("");
 
   useEffect(() => {
     async function fetchNote() {
-      const data = await fetch(`${import.meta.env.VITE_API_URL}/${id}`);
-      const json = await data.json();
-      setNote(json.data);
+      try {
+        setFetchError("");
+        const data = await fetch(`${import.meta.env.VITE_API_URL}/${id}`);
+        const json = await data.json();
+        setNote(json.data);
+      } catch (error) {
+        if (error instanceof Error) {
+          setFetchError(error.message);
+        } else {
+          setFetchError(`Error in creating the note ${error}`);
+        }
+      }
     }
     fetchNote();
-  }, []);
+  }, [id]);
 
   const deleteNote = async () => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/${id}`, {
-      method: "DELETE",
-    });
-    const json = await res.json();
-    if (json.success) {
-      navigate("/");
+    try {
+      setDeleteError("");
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/${id}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (json.success) {
+        navigate("/");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setFetchError(error.message);
+      } else {
+        setFetchError(`Error in creating the note ${error}`);
+      }
     }
   };
 
@@ -41,7 +62,21 @@ const NotePage = () => {
           <button className="deleteButton" onClick={deleteNote}>
             delete
           </button>
+          {deleteError && (
+            <div className="errorMessageContainer">
+              <p className="errorMessage">
+                Error in deleting the note:{deleteError}
+              </p>
+            </div>
+          )}
         </div>
+        {fetchError && (
+          <div className="errorMessageContainer">
+            <p className="errorMessage">
+              Error in fetching the note:{fetchError}
+            </p>
+          </div>
+        )}
         <div className="dates">
           <h2 className="createdAt">
             {" "}

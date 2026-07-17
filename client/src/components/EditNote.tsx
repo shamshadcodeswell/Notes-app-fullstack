@@ -6,34 +6,55 @@ const EditNote = () => {
   const { id } = useParams();
   const [title, setTitle] = useState<string>("");
   const [body, setBody] = useState<string>("");
+  const [fetchError, setFetchError] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
+
   useEffect(() => {
     async function fetchNote() {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/${id}`);
-      const json = await res.json();
-      if (json.data) {
-        setTitle(json.data.title);
-        setBody(json.data.body);
+      try {
+        setFetchError("");
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/${id}`);
+        const json = await res.json();
+        if (json.data) {
+          setTitle(json.data.title);
+          setBody(json.data.body);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          setFetchError(error.message);
+        } else {
+          setFetchError(`error ,${error}`);
+        }
       }
     }
     fetchNote();
-  }, []);
+  }, [id]);
 
   const editNote = async () => {
     const editedNote = {
       title: title,
       body: body,
     };
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(editedNote),
-    });
-    const json = await res.json();
-    if (json.success) {
-      navigate(`/note/${id}`);
+    try {
+      setError("");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editedNote),
+      });
+      const json = await res.json();
+      if (json.success) {
+        navigate(`/note/${id}`);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError(`error, ${error}`);
+      }
     }
   };
 
@@ -54,11 +75,21 @@ const EditNote = () => {
           onChange={(e) => setBody(e.target.value)}
         ></textarea>
       </div>
+      {fetchError && (
+        <div className="errorMessageContainer">
+          <p className="errorMessage">Error in getting note :{fetchError}</p>
+        </div>
+      )}
       <div className="submitButtonConatiner">
         <button className="submitButton" onClick={editNote}>
           Edit
         </button>
       </div>
+      {error && (
+        <div className="errorMessageContainer">
+          <p className="errorMessage">Error in editing the note:{error}</p>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import type { ApiResponse, Note } from "../type";
+import type { Note } from "../type";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./NoteList.css";
@@ -8,16 +8,25 @@ const NoteList = () => {
   const [sortOpen, setSortOpen] = useState<boolean>(false);
   const [filteredList, setFilteredList] = useState<Note[]>([]);
   const [search, setSearch] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchNotes() {
-      const data = await fetch(`${import.meta.env.VITE_API_URL}`);
-      const json = await data.json();
-      console.log(json);
-      if (json.data) {
-        setList(json.data);
-        setFilteredList(json.data);
+      try {
+        setError("");
+        const data = await fetch(`${import.meta.env.VITE_API_URL}`);
+        const json = await data.json();
+        if (json.data) {
+          setList(json.data);
+          setFilteredList(json.data);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError(`Error in retrieving notes ${error}`);
+        }
       }
     }
     fetchNotes();
@@ -99,7 +108,11 @@ const NoteList = () => {
             </div>
           </div>
         </div>
-
+        {error && (
+          <div className="errorMessageContainer">
+            <p className="errorMessage">Error in retrieving notes:{error}</p>
+          </div>
+        )}
         {filteredList.length === 0 ? (
           <h1 className="emptyMessage">No notes found</h1>
         ) : (

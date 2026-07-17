@@ -5,6 +5,7 @@ import "./CreateNote.css";
 const CreateNote = () => {
   const [title, setTitle] = useState<string>("");
   const [body, setBody] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   const navigate = useNavigate();
 
@@ -13,17 +14,25 @@ const CreateNote = () => {
       title: title,
       body: body,
     };
-
-    const res = await fetch(`${import.meta.env.VITE_API_URL}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newNote),
-    });
-    const json: ApiResponse<null> = await res.json();
-    if (json.success) {
-      navigate("/");
+    try {
+      setError("");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newNote),
+      });
+      const json: ApiResponse<null> = await res.json();
+      if (json.success) {
+        navigate("/");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError(`Error in creating the note ${error}`);
+      }
     }
   };
 
@@ -49,6 +58,11 @@ const CreateNote = () => {
           Create
         </button>
       </div>
+      {error && (
+        <div className="errorMessageContainer">
+          <p className="errorMessage">Error in creating the note :{error}</p>
+        </div>
+      )}
     </div>
   );
 };
