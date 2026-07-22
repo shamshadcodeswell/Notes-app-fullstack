@@ -6,7 +6,7 @@ const sessionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    refresTokenHash: {
+    refreshTokenHash: {
       type: String,
     },
     ip: {
@@ -14,6 +14,10 @@ const sessionSchema = new mongoose.Schema(
     },
     userAgent: {
       type: String,
+    },
+    revoked: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true },
