@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 
 export const connectDB = async () => {
   try {
-    const connectionInstance = await mongoose.connect(
-      `${process.env.DB_URI}/${process.env.DB_NAME}`,
-    );
+    const uri = process.env.DB_URI;
+    if (!uri) throw new Error("DB URL not defined");
+    await mongoose.connect(uri, { dbName: process.env.DB_NAME });
     console.log("DataBase connected Successfully");
   } catch (error) {
     if (error instanceof Error) {

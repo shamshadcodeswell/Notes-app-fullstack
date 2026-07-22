@@ -3,15 +3,19 @@ dotenv.config();
 import { connectDB } from "./db/connection.js";
 import express from "express";
 import notesRouter from "./routes/api-notes.js";
-import cors from "cors"
+import cors from "cors";
+import authRouter from "./routes/api-auth.js";
 const app = express();
-app.use(cors({
-  origin: "http://localhost:5173",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use("/api/notes", notesRouter);
+app.use("/api/auth", authRouter);
 (async () => {
   try {
     await connectDB();
