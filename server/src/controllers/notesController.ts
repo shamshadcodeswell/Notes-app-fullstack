@@ -1,10 +1,13 @@
 import noteModel, { type NoteType } from "../db/models/note.model.js";
 import type { ApiResponse } from "../types.js";
 import type { Request, Response } from "express";
+import { Types } from "mongoose";
+import jwt from "jsonwebtoken";
+import type mongoose from "mongoose";
 //------------------------------------------------------------------------------------display notes--------------------------------------------------------------------------------------------------------------
 const displayNotes = async (req: Request, res: Response) => {
   try {
-    const allTodo = await noteModel.find();
+    const allTodo = await noteModel.find({ user: req.userId });
     if (allTodo.length === 0) {
       const response: ApiResponse<null> = {
         success: false,
@@ -41,7 +44,11 @@ const displayNotes = async (req: Request, res: Response) => {
 /*-----------------------------------------------------------------------------------------create note-----------------------------------------------------------------------------------------------------------*/
 const createNote = async (req: Request, res: Response) => {
   try {
-    const note: NoteType = req.body;
+    const note = {
+      user: req.userId,
+      title: req.body.title,
+      body: req.body.body,
+    };
     await noteModel.create(note);
     const response: ApiResponse<null> = {
       success: true,
@@ -73,8 +80,8 @@ const createNote = async (req: Request, res: Response) => {
 const editNote = async (req: Request, res: Response) => {
   try {
     const editedNote: NoteType = req.body;
-    const note: NoteType | null = await noteModel.findByIdAndUpdate(
-      req.params.id,
+    const note: NoteType | null = await noteModel.findOneAndUpdate(
+      { _id: req.params.id, user: req.userId },
       editedNote,
       {
         new: true,
@@ -115,7 +122,10 @@ const editNote = async (req: Request, res: Response) => {
 //--------------------------------------------------------------------------------------------findandDisplayNote-----------------------------------------------------------------------------------------
 const findAndDisplayNote = async (req: Request, res: Response) => {
   try {
-    const note: NoteType | null = await noteModel.findById(req.params.id);
+    const note: NoteType | null = await noteModel.findOne({
+      _id: req.params.id,
+      user: req.userId,
+    });
     if (!note) {
       const response: ApiResponse<null> = {
         success: false,
@@ -152,9 +162,10 @@ const findAndDisplayNote = async (req: Request, res: Response) => {
 //---------------------------------------------------------------------------------------------------delete note----------------------------------------------------------------------------------------------------
 const deleteNote = async (req: Request, res: Response) => {
   try {
-    const deletedNote: NoteType | null = await noteModel.findByIdAndDelete(
-      req.params.id,
-    );
+    const deletedNote: NoteType | null = await noteModel.findOneAndDelete({
+      _id: req.params.id,
+      user: req.userId,
+    });
     if (!deletedNote) {
       const response: ApiResponse<null> = {
         success: false,
