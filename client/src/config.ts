@@ -6,8 +6,9 @@ if (!REGISTER_URL || !LOGIN_URL) {
 }
 
 const config = {
-  REGISTER_URL,
-  LOGIN_URL,
+  REGISTER_URL: "http://localhost:5000/api/auth/register",
+  LOGIN_URL: "http://localhost:5000/api/auth/login",
+  ROTATE_TOKEN_URL: "http://localhost:5000/api/auth/rotate-token",
 };
 
 export default config;
