@@ -1,0 +1,94 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+.registerContainer {
+  max-width: 420px;
+  margin: 120px auto;
+  padding: 40px 36px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.registerHeader h1 {
+  font-family: "Inter", sans-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 32px 0;
+  text-align: center;
+}
+
+.inputform {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.inputform input {
+  padding: 12px 18px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.84rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.inputform input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.inputform input:focus {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.formfooter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.submitFormButton {
+  width: 100%;
+  padding: 12px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #0f0f1a;
+  background: rgba(255, 255, 255, 0.88);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.1s;
+}
+
+.submitFormButton:hover {
+  background: #fff;
+}
+
+.submitFormButton:active {
+  transform: scale(0.97);
+}
+
+.redirector {
+  font-family: "Inter", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  margin: 0;
+  transition: color 0.2s;
+}
+
+.redirector:hover {
+  color: rgba(255, 255, 255, 0.7);
+}

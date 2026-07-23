@@ -5,6 +5,9 @@ import NoteList from "./components/NoteList";
 import CreateNote from "./components/CreateNote";
 import NotePage from "./components/NotePage";
 import EditNote from "./components/EditNote";
+import Register from "./components/auth components/Register";
+import Login from "./components/auth components/Login";
+
 const App = () => {
   return (
     <div className="App">
@@ -35,6 +38,14 @@ const router = createBrowserRouter([
         element: <EditNote></EditNote>,
       },
     ],
+  },
+  {
+    path: "/register",
+    element: <Register></Register>,
+  },
+  {
+    path: "/login",
+    element: <Login></Login>,
   },
 ]);
 const Root = () => {
