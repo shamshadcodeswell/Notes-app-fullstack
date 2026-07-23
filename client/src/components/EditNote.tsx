@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./CreateNote.css";
+import { useAuth } from "../context/AuthContext";
 
 const EditNote = () => {
   const { id } = useParams();
@@ -9,12 +10,20 @@ const EditNote = () => {
   const [fetchError, setFetchError] = useState<string>("");
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
+  const { accessToken } = useAuth();
 
   useEffect(() => {
     async function fetchNote() {
       try {
         setFetchError("");
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/${id}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/${id}`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
         const json = await res.json();
         if (json.data) {
           setTitle(json.data.title);
@@ -42,6 +51,7 @@ const EditNote = () => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(editedNote),
       });

@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import config from "../config";
 
 interface AuthContextType {
   accessToken: string | null;

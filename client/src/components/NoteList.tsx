@@ -19,7 +19,7 @@ const NoteList = () => {
       try {
         setError("");
         const data = await fetch(`${import.meta.env.VITE_API_URL}`, {
-          method: "DELETE",
+          method: "GET",
           credentials: "include",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -27,9 +27,12 @@ const NoteList = () => {
           },
         });
         const json = await data.json();
-        if (json.data) {
-          setList(json.data);
-          setFilteredList(json.data);
+        if (data.ok) {
+          setList(json.data || []);
+          setFilteredList(json.data || []);
+        } else {
+          setList([]);
+          setFilteredList([]);
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -42,7 +45,7 @@ const NoteList = () => {
       }
     }
     fetchNotes();
-  }, []);
+  }, [accessToken]);
 
   const sortByNewest = () => {
     setFilteredList(
