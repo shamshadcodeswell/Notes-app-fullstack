@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { type Note } from "../type";
 import "./NotePage.css";
+import { useAuth } from "../context/AuthContext";
 
 const NotePage = () => {
   const { id } = useParams();
@@ -9,12 +10,20 @@ const NotePage = () => {
   const navigate = useNavigate();
   const [fetchError, setFetchError] = useState<string>("");
   const [deleteError, setDeleteError] = useState<string>("");
+  const { accessToken } = useAuth();
 
   useEffect(() => {
     async function fetchNote() {
       try {
         setFetchError("");
-        const data = await fetch(`${import.meta.env.VITE_API_URL}/${id}`);
+        const data = await fetch(`${import.meta.env.VITE_API_URL}/${id}`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
         const json = await data.json();
         setNote(json.data);
       } catch (error) {
@@ -34,6 +43,11 @@ const NotePage = () => {
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/${id}`, {
         method: "DELETE",
+        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
       });
       const json = await res.json();
       if (json.success) {

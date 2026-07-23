@@ -2,6 +2,7 @@ import type { Note } from "../type";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./NoteList.css";
+import { useAuth } from "../context/AuthContext";
 
 const NoteList = () => {
   const [list, setList] = useState<Note[]>([]);
@@ -11,12 +12,20 @@ const NoteList = () => {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
+  const { accessToken } = useAuth();
 
   useEffect(() => {
     async function fetchNotes() {
       try {
         setError("");
-        const data = await fetch(`${import.meta.env.VITE_API_URL}`);
+        const data = await fetch(`${import.meta.env.VITE_API_URL}`, {
+          method: "DELETE",
+          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
         const json = await data.json();
         if (json.data) {
           setList(json.data);

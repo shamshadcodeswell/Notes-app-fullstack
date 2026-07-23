@@ -5,8 +5,8 @@ import NoteList from "./components/NoteList";
 import CreateNote from "./components/CreateNote";
 import NotePage from "./components/NotePage";
 import EditNote from "./components/EditNote";
-import Register from "./components/auth components/Register";
-import Login from "./components/auth components/Login";
+import Register from "./components/auth/Register";
+import Login from "./components/auth/Login";
 
 const App = () => {
   return (

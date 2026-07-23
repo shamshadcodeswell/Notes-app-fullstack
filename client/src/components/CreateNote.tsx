@@ -2,10 +2,13 @@ import { useState } from "react";
 import type { ApiResponse, NewNote } from "../type";
 import { useNavigate } from "react-router-dom";
 import "./CreateNote.css";
+import { useAuth } from "../context/AuthContext";
+
 const CreateNote = () => {
   const [title, setTitle] = useState<string>("");
   const [body, setBody] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const { accessToken } = useAuth();
 
   const navigate = useNavigate();
 
@@ -24,6 +27,7 @@ const CreateNote = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(newNote),
       });
