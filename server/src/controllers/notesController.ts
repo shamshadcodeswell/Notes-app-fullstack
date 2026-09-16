@@ -1,9 +1,7 @@
 import noteModel, { type NoteType } from "../db/models/note.model.js";
 import type { ApiResponse } from "../types.js";
 import type { Request, Response } from "express";
-import { Types } from "mongoose";
-import jwt from "jsonwebtoken";
-import type mongoose from "mongoose";
+
 //------------------------------------------------------------------------------------display notes--------------------------------------------------------------------------------------------------------------
 const displayNotes = async (req: Request, res: Response) => {
   try {

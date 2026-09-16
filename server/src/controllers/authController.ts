@@ -171,8 +171,12 @@ export const rotateToken = async (req: Request, res: Response) => {
       refreshToken,
       session.refreshTokenHash,
     );
-    if (!isValid) throw new Error("invalid token");
-
+    if (!isValid) {
+      session.revoked = true;
+      session.refreshTokenHash = "";
+      await session.save();
+      throw new Error("invalid token");
+    }
     const newRefreshToken = jwt.sign(
       { userId: decoded.userId, sessionId: decoded.sessionId },
       process.env.REFRESH_JWT_SECRET,
