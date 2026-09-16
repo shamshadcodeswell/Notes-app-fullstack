@@ -26,6 +26,7 @@ const Register = () => {
         body: JSON.stringify(data),
       });
       const json = await res.json();
+      console.log("register:", res.status, json);
       if (res.ok) {
         setAccessToken(json.accessToken);
         navigate("/");
