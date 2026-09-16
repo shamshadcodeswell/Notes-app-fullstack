@@ -17,7 +17,6 @@ const Header = () => {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    const json = await res.json();
     if (res.ok) {
       setAccessToken(null);
       navigate("/login");

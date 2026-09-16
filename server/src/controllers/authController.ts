@@ -1,245 +1,282 @@
 import sessionModel from "../db/models/session.model.js";
-import userModel, { type userType } from "../db/models/user.model.js";
+import userModel from "../db/models/user.model.js";
 import bcrypt from "bcrypt";
-import type { Request, Response } from "express";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import type { CookieOptions, Request, Response } from "express";
+
+// ---------- helpers ----------
+
+// Frontend (Vercel) and backend (Render) are different sites, so the cookie
+// must be SameSite=None + Secure. Chrome also accepts Secure cookies on localhost.
+const refreshCookieOptions: CookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  path: "/",
+};
+
+const REFRESH_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+
+// JWTs are long and random: SHA-256 is correct here. bcrypt only reads the
+// first 72 bytes, which are identical across a user's tokens.
+const hashToken = (token: string) =>
+  crypto.createHash("sha256").update(token).digest("hex");
+
+const getSecrets = () => {
+  const { ACCESS_JWT_SECRET, REFRESH_JWT_SECRET } = process.env;
+  if (!ACCESS_JWT_SECRET || !REFRESH_JWT_SECRET) return null;
+  return { ACCESS_JWT_SECRET, REFRESH_JWT_SECRET };
+};
+
+const signTokens = (
+  payload: { userId: unknown; sessionId: unknown },
+  secrets: { ACCESS_JWT_SECRET: string; REFRESH_JWT_SECRET: string },
+) => ({
+  accessToken: jwt.sign(payload, secrets.ACCESS_JWT_SECRET, {
+    expiresIn: "15m",
+  }),
+  refreshToken: jwt.sign(payload, secrets.REFRESH_JWT_SECRET, {
+    expiresIn: "7d",
+  }),
+});
+
+// Creates a new session, signs both tokens, sets the cookie, returns the access token
+const startSession = async (
+  req: Request,
+  res: Response,
+  userId: unknown,
+  secrets: { ACCESS_JWT_SECRET: string; REFRESH_JWT_SECRET: string },
+) => {
+  const session = new sessionModel({
+    user: userId,
+    ip: req.ip,
+    userAgent: req.headers["user-agent"],
+    revoked: false,
+  });
+
+  const { accessToken, refreshToken } = signTokens(
+    { userId, sessionId: session._id },
+    secrets,
+  );
+
+  session.refreshTokenHash = hashToken(refreshToken);
+  await session.save();
+
+  res.cookie("refreshToken", refreshToken, {
+    ...refreshCookieOptions,
+    maxAge: REFRESH_MAX_AGE,
+  });
+
+  return accessToken;
+};
+
+// ---------- controllers ----------
 
 export const registerUser = async (req: Request, res: Response) => {
-  const { username, email, password } = req.body;
-  try {
-    const userExist = await userModel.findOne({ email: email });
-    if (userExist) throw new Error("User already exists");
+  const { username, email, password } = req.body ?? {};
+  const secrets = getSecrets();
 
-    const passSalt = await bcrypt.genSalt(10);
-    const passHash = await bcrypt.hash(password, passSalt);
+  if (!secrets) {
+    console.error("JWT secrets are missing");
+    res.status(500).json({ message: "internal server error" });
+    return;
+  }
+
+  if (
+    typeof username !== "string" ||
+    typeof email !== "string" ||
+    typeof password !== "string" ||
+    !username.trim() ||
+    !email.trim() ||
+    password.length < 8
+  ) {
+    res.status(400).json({
+      message:
+        "username, email and a password of at least 8 characters are required",
+    });
+    return;
+  }
+
+  try {
+    const userExist = await userModel.findOne({ email });
+    if (userExist) {
+      res.status(409).json({ message: "user already exists" });
+      return;
+    }
+
+    const passHash = await bcrypt.hash(password, 10);
     const user = await userModel.create({
       username,
       email,
       password: passHash,
     });
 
-    const session = await sessionModel.create({
-      user: user._id,
-      ip: req.ip,
-      userAgent: req.headers["user-agent"],
-    });
-
-    if (!process.env.REFRESH_JWT_SECRET) throw new Error("key doesnt exist");
-    const refreshToken = jwt.sign(
-      { userId: user._id, sessionId: session._id },
-      process.env.REFRESH_JWT_SECRET,
-      { expiresIn: "7d" },
-    );
-
-    const RTSalt = await bcrypt.genSalt(10);
-    const RTHash = await bcrypt.hash(refreshToken, RTSalt);
-    session.refreshTokenHash = RTHash;
-    await session.save();
-
-    if (!process.env.ACCESS_JWT_SECRET) throw new Error("key doesnt exist");
-    const accessToken = jwt.sign(
-      { userId: user._id, sessionId: session._id },
-      process.env.ACCESS_JWT_SECRET,
-      { expiresIn: "15m" },
-    );
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-    res.status(201).json({
-      message: "user registered successfully",
-      accessToken: accessToken,
-    });
+    const accessToken = await startSession(req, res, user._id, secrets);
+    res
+      .status(201)
+      .json({ message: "user registered successfully", accessToken });
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(409).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: "internal server error" });
-    }
+    console.error("Register failed:", error);
+    res.status(500).json({ message: "internal server error" });
   }
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body ?? {};
+  const secrets = getSecrets();
+
+  if (!secrets) {
+    console.error("JWT secrets are missing");
+    res.status(500).json({ message: "internal server error" });
+    return;
+  }
+
+  if (typeof email !== "string" || typeof password !== "string") {
+    res.status(400).json({ message: "email and password are required" });
+    return;
+  }
+
   try {
     const user = await userModel.findOne({ email });
-    if (!user) throw new Error("account does not exist");
+    const isValid = user
+      ? await bcrypt.compare(password, user.password)
+      : false;
 
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) throw new Error("email or password incorrect");
-
-    let session = await sessionModel.findOne({
-      user: user._id,
-      ip: req.ip,
-      userAgent: req.headers["user-agent"],
-    });
-    if (session) {
-      session.revoked = false;
-      session.refreshTokenHash = "";
-      await session.save();
-    } else {
-      session = await sessionModel.create({
-        user: user._id,
-        refreshTokenHash: "",
-        ip: req.ip,
-        userAgent: req.headers["user-agent"],
-        revoked: false,
-      });
+    if (!user || !isValid) {
+      res.status(401).json({ message: "email or password incorrect" });
+      return;
     }
-    if (!process.env.REFRESH_JWT_SECRET)
-      throw new Error("internal server error");
-    const refreshToken = jwt.sign(
-      { userId: user._id, sessionId: session._id },
-      process.env.REFRESH_JWT_SECRET,
-      { expiresIn: "7d" },
-    );
 
-    if (!process.env.ACCESS_JWT_SECRET)
-      throw new Error("internal server error");
-    const accessToken = jwt.sign(
-      { userId: user._id, sessionId: session._id },
-      process.env.ACCESS_JWT_SECRET,
-      { expiresIn: "15m" },
-    );
-
-    const RTSalt = await bcrypt.genSalt(10);
-    const RTHash = await bcrypt.hash(refreshToken, RTSalt);
-    session.refreshTokenHash = RTHash;
-    await session.save();
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-    res.status(200).json({
-      message: "login successful",
-      accessToken: accessToken,
-    });
+    const accessToken = await startSession(req, res, user._id, secrets);
+    res.status(200).json({ message: "login successful", accessToken });
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(409).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: "internal server error" });
-    }
+    console.error("Login failed:", error);
+    res.status(500).json({ message: "internal server error" });
   }
 };
 
 export const logout = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies?.refreshToken;
+
   try {
-    const accessToken = req.headers.authorization?.split(" ")[1];
-    if (!accessToken) throw new Error("session not found");
-    if (!process.env.ACCESS_JWT_SECRET) throw new Error("session not found");
-    const decoded = jwt.verify(accessToken, process.env.ACCESS_JWT_SECRET);
-    if (typeof decoded === "string" || !decoded.sessionId) {
-      throw new Error("invalid token");
+    if (refreshToken && process.env.REFRESH_JWT_SECRET) {
+      // Revoke even if the token has expired
+      const decoded = jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET, {
+        ignoreExpiration: true,
+      });
+
+      if (typeof decoded !== "string" && decoded.sessionId) {
+        await sessionModel.findByIdAndUpdate(decoded.sessionId, {
+          revoked: true,
+          refreshTokenHash: "",
+        });
+      }
     }
-    const session = await sessionModel.findById(decoded.sessionId);
-    if (!session) throw new Error("session not found");
-    session.revoked = true;
-    session.refreshTokenHash = "";
-    await session.save();
-    res.clearCookie("refreshToken");
-    res.status(200).json({ message: "successfully logged out" });
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      res.status(401).json({ message: "invalid or expired token" });
-    } else if (error instanceof Error) {
-      res.status(409).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: "internal server error" });
-    }
+    // Tampered or invalid token: nothing to revoke, still log out
+    console.error("Logout revoke failed:", error);
+  } finally {
+    res.clearCookie("refreshToken", refreshCookieOptions);
+    res.status(200).json({ message: "successfully logged out" });
   }
 };
 
 export const rotateToken = async (req: Request, res: Response) => {
+  const secrets = getSecrets();
+  if (!secrets) {
+    console.error("JWT secrets are missing");
+    res.status(500).json({ message: "internal server error" });
+    return;
+  }
+
+  const refreshToken = req.cookies?.refreshToken;
+  if (!refreshToken) {
+    res.status(401).json({ message: "not authenticated" });
+    return;
+  }
+
   try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!process.env.REFRESH_JWT_SECRET) throw new Error("invalid token");
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET);
+    const decoded = jwt.verify(refreshToken, secrets.REFRESH_JWT_SECRET);
     if (typeof decoded === "string" || !decoded.sessionId || !decoded.userId) {
-      throw new Error("invalid token");
+      throw new jwt.JsonWebTokenError("invalid token payload");
     }
+
     const session = await sessionModel.findById(decoded.sessionId);
-    if (!session || !session.refreshTokenHash || session.revoked === true)
-      throw new Error("session not found");
-    const isValid = await bcrypt.compare(
-      refreshToken,
-      session.refreshTokenHash,
-    );
-    if (!isValid) {
+    if (!session || session.revoked || !session.refreshTokenHash) {
+      res.clearCookie("refreshToken", refreshCookieOptions);
+      res.status(401).json({ message: "session expired, please log in again" });
+      return;
+    }
+
+    // Valid signature but not the latest token: it was reused. Kill the session.
+    if (hashToken(refreshToken) !== session.refreshTokenHash) {
       session.revoked = true;
       session.refreshTokenHash = "";
       await session.save();
-      throw new Error("invalid token");
+      res.clearCookie("refreshToken", refreshCookieOptions);
+      res.status(401).json({ message: "session expired, please log in again" });
+      return;
     }
-    const newRefreshToken = jwt.sign(
+
+    const { accessToken, refreshToken: newRefreshToken } = signTokens(
       { userId: decoded.userId, sessionId: decoded.sessionId },
-      process.env.REFRESH_JWT_SECRET,
-      { expiresIn: "7d" },
-    );
-    if (!process.env.ACCESS_JWT_SECRET)
-      throw new Error("Internal server error");
-    const newAccessToken = jwt.sign(
-      { userId: decoded.userId, sessionId: decoded.sessionId },
-      process.env.ACCESS_JWT_SECRET,
-      { expiresIn: "15m" },
+      secrets,
     );
 
-    const RTSalt = await bcrypt.genSalt(10);
-    const RTHash = await bcrypt.hash(newRefreshToken, RTSalt);
-
-    session.refreshTokenHash = RTHash;
+    session.refreshTokenHash = hashToken(newRefreshToken);
     await session.save();
 
     res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      secure: true,
+      ...refreshCookieOptions,
+      maxAge: REFRESH_MAX_AGE,
     });
-    res.status(200).json({
-      message: "token rotated",
-      accessToken: newAccessToken,
-    });
+    res.status(200).json({ message: "token rotated", accessToken });
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
+      // Also covers TokenExpiredError, which extends JsonWebTokenError
+      res.clearCookie("refreshToken", refreshCookieOptions);
       res.status(401).json({ message: "invalid or expired token" });
-    } else if (error instanceof Error) {
-      res.status(409).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: "internal server error" });
+      return;
     }
+    console.error("Token rotation failed:", error);
+    res.status(500).json({ message: "internal server error" });
   }
 };
 
 export const getMe = async (req: Request, res: Response) => {
-  try {
-    const accessToken = req.headers.authorization?.split(" ")[1];
-    if (!accessToken) throw new Error("not authenticated");
-    if (!process.env.ACCESS_JWT_SECRET)
-      throw new Error("internal server error");
+  const secret = process.env.ACCESS_JWT_SECRET;
+  if (!secret) {
+    console.error("ACCESS_JWT_SECRET is missing");
+    res.status(500).json({ message: "internal server error" });
+    return;
+  }
 
-    const decoded = jwt.verify(accessToken, process.env.ACCESS_JWT_SECRET);
+  const accessToken = req.headers.authorization?.split(" ")[1];
+  if (!accessToken) {
+    res.status(401).json({ message: "not authenticated" });
+    return;
+  }
+
+  try {
+    const decoded = jwt.verify(accessToken, secret);
     if (typeof decoded === "string" || !decoded.userId) {
-      throw new Error("invalid token");
+      throw new jwt.JsonWebTokenError("invalid token payload");
     }
 
     const user = await userModel.findById(decoded.userId).select("-password");
-    if (!user) throw new Error("user not found");
+    if (!user) {
+      res.status(401).json({ message: "user not found" });
+      return;
+    }
 
     res.status(200).json({ user });
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
       res.status(401).json({ message: "invalid or expired token" });
-    } else if (error instanceof Error) {
-      res.status(401).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: "internal server error" });
+      return;
     }
+    console.error("getMe failed:", error);
+    res.status(500).json({ message: "internal server error" });
   }
 };
